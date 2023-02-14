@@ -1,0 +1,8 @@
+"UnlitGeneric"
+{
+	"$basetexture" "rdrm/deadeye/deadeye_core"
+	"$nocull" 1
+	"$translucent" 1
+	"$vertexalpha" 1
+	"$vertexcolor" 1
+}
