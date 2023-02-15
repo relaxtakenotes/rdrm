@@ -308,7 +308,7 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 			timer.Simple(engine.TickInterval(), function() no_ammo_spent_timer = 0 end)
 			currently_waiting = true
 		elseif shooting_quota > 0 and table.Count(deadeye_marks) > 0 then
-			no_ammo_spent_timer = math.Clamp(no_ammo_spent_timer + engine.TickInterval(), 0, 1)
+			no_ammo_spent_timer = math.Clamp(no_ammo_spent_timer + engine.TickInterval() / 5, 0, 1)
 			currently_waiting = false
 		end
 
@@ -518,6 +518,7 @@ local function draw_screen_overlay()
 	end
 
 	if inde_fx_lerp == 1 then noggin = true end
+	if noggin == true then inde_fx_lerp = 1 end
 
 	DrawColorModify(cc)
 
@@ -543,7 +544,11 @@ hook.Add("RenderScreenspaceEffects", "rdrm_deadeye_effects", function()
 		distort_fx_lerp = math.Clamp(distort_fx_lerp - RealFrameTime() * 2, 0, 1)
 	end
 
-	if rdrm.in_killcam then inde_fx_lerp = 0 distort_fx_lerp = 0 return end
+	if rdrm.in_killcam or rdrm.killcam_time > 0 then 
+		inde_fx_lerp = 0 
+		distort_fx_lerp = 0 
+		return 
+	end
 	
 	if inde_fx_lerp > 0 then
 		draw_chams()

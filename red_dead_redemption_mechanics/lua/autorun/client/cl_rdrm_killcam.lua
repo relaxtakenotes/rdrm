@@ -4,7 +4,7 @@ if not game.SinglePlayer() then return end
 
 local chance = CreateConVar("cl_rdrm_killcam_chance", "0.35", {FCVAR_ARCHIVE}, "Normalized chance of the killcam starting to play.", 0, 10000)
 
-local killcam_time = 0
+rdrm.killcam_time = 0
 local desired_angle = Angle()
 local desired_pos = Vector()
 local current_ent = NULL
@@ -12,6 +12,8 @@ local switched = false
 local sent = false
 local sm_lerp = 0
 local sm_sent = true
+local past_breaking_point = false
+local past_ten = false
 
 local function is_usable_for_killcam(ent)
 	if not IsValid(ent) or not ent.GetModel or not ent.GetClass then return false end
@@ -23,7 +25,8 @@ end
 
 local function set_random_angle(ent)
 	local pos = ent:GetPos()
-	if not ent:IsRagdoll() then pos.z = pos.z + 52 end
+
+	if not ent:IsRagdoll() then pos.z = pos.z + ent:BoundingRadius() * 4/3 end
 
 	local offset = ent:GetAngles():Forward()
 	local valid_offset = false
@@ -78,19 +81,22 @@ local function rdrm_killcam_apply(ent, ragdoll)
 	if not is_usable_for_killcam(ent) then return end
 	if math.Rand(0, 1) > chance:GetFloat() then return end
 
+	LocalPlayer():EmitSound("killcam_bloodsplatter")
+
 	sent = false
 	switched = false
 	current_ent = ragdoll
 	set_random_angle(ent)
-	killcam_time = 1
+	rdrm.killcam_time = 1
 	past_breaking_point = false
+	past_ten = false
 
 	rdrm.in_killcam = true
 	rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam})
 end
 
 hook.Add("CalcView", "rdrm_killcam_view", function(ply, pos, angles, fov)
-	if killcam_time <= 0 then return end
+	if rdrm.killcam_time <= 0 then return end
 
 	local view = {
 		origin = desired_pos,
@@ -102,18 +108,17 @@ hook.Add("CalcView", "rdrm_killcam_view", function(ply, pos, angles, fov)
 	return view
 end)
 
-
-local past_breaking_point = false
 hook.Add("Think", "rdrm_killcam_think", function()
-	if killcam_time == 0 and not sent then
+	if rdrm.killcam_time == 0 and not sent then
 		switched = false
 		sent = true
 		past_breaking_point = false
+		past_ten = false
 	end
 
-	if killcam_time == 0 then return end
+	if rdrm.killcam_time == 0 then return end
 
-	if killcam_time <= 0.5 and not switched then
+	if rdrm.killcam_time <= 0.5 and not switched then
 		local will_switch = math.Rand(0, 1) > 0.35
 		local switch_to_local = math.Rand(0, 1) > 0.6
 
@@ -124,22 +129,28 @@ hook.Add("Think", "rdrm_killcam_think", function()
 				set_random_angle(current_ent)
 			end
 		else
-			killcam_time = 0.15
+			rdrm.killcam_time = 0.15
 		end
 		switched = true
 	end
 
-	if killcam_time <= 0.15 and not past_breaking_point then
+	if rdrm.killcam_time <= 0.15 and not past_breaking_point then
         rdrm.in_killcam = false
 		rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true})
 		past_breaking_point = true
+		if rdrm.in_deadeye then past_ten = true end
 	end
 
-	killcam_time = math.Clamp(killcam_time - RealFrameTime() / 5, 0, 1)
+	if rdrm.killcam_time <= 0.05 and not past_ten then
+		LocalPlayer():EmitSound("deadeye_end")
+		past_ten = true
+	end
+	
+	rdrm.killcam_time = math.Clamp(rdrm.killcam_time - RealFrameTime() / 5, 0, 1)
 end)
 
 hook.Add("HUDShouldDraw", "rdrm_killcam_hide_hud", function(element) 
-	if killcam_time > 0 then return false end
+	if rdrm.killcam_time > 0 then return false end
 end)
 
 
@@ -170,18 +181,22 @@ local pp_lerp = 0
 local pp_fraction = 0.1
 
 hook.Add("RenderScreenspaceEffects", "zzzxczxc_rdrm_killcam_overlay", function()
-	if killcam_time > 0 then
+	if rdrm.killcam_time > 0 then
 		local tab = {
 			["$pp_colour_brightness"] = Lerp(pp_lerp, 0, pp_in_killcam["$pp_colour_brightness"])
 		}
-
+		
 		pp_lerp = math.Clamp(pp_lerp + pp_fraction * RealFrameTime() * 7, 0, 1)
-
+		
+		render.UpdateScreenEffectTexture()
 		DrawColorModify(tab)
+		render.UpdateScreenEffectTexture()
 		DrawColorModify(pp_in_killcam)
+		render.UpdateScreenEffectTexture()
 		vignettemat:SetFloat("$alpha", 1)
 		render.SetMaterial(vignettemat)
 		render.DrawScreenQuad()
+		render.UpdateScreenEffectTexture()
 	else
 		pp_lerp = 0
 	end

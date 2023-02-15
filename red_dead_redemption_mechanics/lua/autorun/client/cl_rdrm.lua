@@ -39,16 +39,24 @@ sound.Add({
 	sound = "rdrm/deadeye/end.wav"
 })
 
-/*
 sound.Add({
-	name = "killcam_bloodsplatter",
+	name = "killcam_end",
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 0,
 	pitch = {95,105},
-	sound = "killcam/bloodsplatter.wav"
+	sound = "rdrm/killcam/killcam_end.wav"
 })
-*/
+
+sound.Add({
+	name = "killcam_bloodsplatter",
+	channel = CHAN_STATIC,
+	volume = 0.6,
+	level = 0,
+	pitch = {95,105},
+	sound = "rdrm/killcam/bloodsplatter.wav"
+})
+
 
 net.Receive("rdrm_ragdoll_spawned", function()
 	local owner = net.ReadEntity()
