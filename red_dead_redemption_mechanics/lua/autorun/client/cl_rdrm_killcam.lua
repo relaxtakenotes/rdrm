@@ -10,8 +10,6 @@ local desired_pos = Vector()
 local current_ent = NULL
 local switched = false
 local sent = false
-local sm_lerp = 0
-local sm_sent = true
 local past_breaking_point = false
 local past_ten = false
 
@@ -66,7 +64,7 @@ local function set_random_angle(ent)
 			continue
 		end
 
-		if not (tr_f.HitPos:IsEqualTol(pos + offset, 10) and tr_t.HitPos:IsEqualTol(pos, 10)) then
+		if not (tr_f.HitPos:IsEqualTol(pos + offset, 10) and tr_t.HitPos:IsEqualTol(pos, 10) and not tr_f.Hit and not tr_t.Hit and not tr_f.StartSolid and not tr_t.StartSolid) then
 			continue
 		end
 
@@ -80,6 +78,7 @@ end
 local function rdrm_killcam_apply(ent, ragdoll)
 	if not is_usable_for_killcam(ent) then return end
 	if math.Rand(0, 1) > chance:GetFloat() then return end
+	if rdrm.killcam_time > 0 then return end
 
 	LocalPlayer():EmitSound("killcam_bloodsplatter")
 
@@ -179,25 +178,33 @@ local pp_out_killcam = {
 local vignettemat = Material("rdrm/screen_overlay/vignette01")
 local pp_lerp = 0
 local pp_fraction = 0.1
+local need_to_fade = false
+local fade_lerp = 0
 
 hook.Add("RenderScreenspaceEffects", "zzzxczxc_rdrm_killcam_overlay", function()
 	if rdrm.killcam_time > 0 then
-		local tab = {
-			["$pp_colour_brightness"] = Lerp(pp_lerp, 0, pp_in_killcam["$pp_colour_brightness"])
-		}
+		need_to_fade = true
+
+		local tab = table.Copy(pp_in_killcam)
+		tab["$pp_colour_brightness"] = Lerp(pp_lerp, 0, pp_in_killcam["$pp_colour_brightness"])
 		
 		pp_lerp = math.Clamp(pp_lerp + pp_fraction * RealFrameTime() * 7, 0, 1)
 		
-		render.UpdateScreenEffectTexture()
 		DrawColorModify(tab)
-		render.UpdateScreenEffectTexture()
-		DrawColorModify(pp_in_killcam)
-		render.UpdateScreenEffectTexture()
 		vignettemat:SetFloat("$alpha", 1)
 		render.SetMaterial(vignettemat)
 		render.DrawScreenQuad()
+
 		render.UpdateScreenEffectTexture()
 	else
 		pp_lerp = 0
+	end
+
+	if rdrm.killcam_time <= 0 and need_to_fade then
+		local tab = table.Copy(pp_out_killcam)
+		fade_lerp = math.Clamp(fade_lerp + RealFrameTime() * 3.5, 0, 1)
+		tab["$pp_colour_brightness"] = Lerp(fade_lerp, -1, pp_out_killcam["$pp_colour_brightness"])
+		DrawColorModify(tab)
+		if fade_lerp == 1 then fade_lerp = 0 need_to_fade = false end
 	end
 end)

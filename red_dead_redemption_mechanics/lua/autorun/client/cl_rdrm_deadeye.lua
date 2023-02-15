@@ -366,6 +366,15 @@ local cc_no_deadeye = {
 	["$pp_colour_colour"] = 1,
 }
 
+local cc_empty_deadeye = {
+	["$pp_colour_addr"] = cc_in_deadeye["$pp_colour_addr"] * 0.5,
+	["$pp_colour_addg"] = cc_in_deadeye["$pp_colour_addg"] * 0.5,
+	["$pp_colour_addb"] = cc_in_deadeye["$pp_colour_addb"] * 0.5,
+	["$pp_colour_brightness"] = cc_in_deadeye["$pp_colour_brightness"] * 0.5,
+	["$pp_colour_contrast"] = cc_in_deadeye["$pp_colour_contrast"],
+	["$pp_colour_colour"] = cc_in_deadeye["$pp_colour_colour"],
+}
+
 
 local function draw_circ_bar(x, y, w, h, progress, color)
 	// https://gist.github.com/Joseph10112/6e6e896b5feee50f7aa2145aabaf6e8c
@@ -479,14 +488,14 @@ local function draw_chams()
 	end
 end
 
-local function draw_distortion()
+local function draw_distortion(t)
 	render.UpdateScreenEffectTexture()
 
 	render.SetMaterial(distortmat)
-	distortmat:SetFloat("$refractamount", math.Remap(math.ease.InQuart(distort_fx_lerp), 0, 1, 0, 0.15))
+	distortmat:SetFloat("$refractamount", math.Remap(math.ease.InQuart(t), 0, 1, 0, 0.15))
 	render.DrawScreenQuad()
 
-	local mult = math.ease.InQuart(distort_fx_lerp) * 2
+	local mult = math.ease.InQuart(t) * 2
 	
 	render.UpdateScreenEffectTexture()
 	
@@ -501,30 +510,28 @@ local function draw_distortion()
 end
 
 local noggin = false
-local function draw_screen_overlay()
+local function draw_screen_overlay(t, cc_in)
 	render.UpdateScreenEffectTexture()
 
 	local cc = {
-		["$pp_colour_addr"] = Lerp(inde_fx_lerp, cc_no_deadeye["$pp_colour_addr"], cc_in_deadeye["$pp_colour_addr"]),
-		["$pp_colour_addg"] = Lerp(inde_fx_lerp, cc_no_deadeye["$pp_colour_addg"], cc_in_deadeye["$pp_colour_addg"]),
-		["$pp_colour_addb"] = Lerp(inde_fx_lerp, cc_no_deadeye["$pp_colour_addb"], cc_in_deadeye["$pp_colour_addb"]),
-		["$pp_colour_brightness"] = Lerp(inde_fx_lerp, cc_no_deadeye["$pp_colour_brightness"], cc_in_deadeye["$pp_colour_brightness"]),
-		["$pp_colour_contrast"] = Lerp(inde_fx_lerp, cc_no_deadeye["$pp_colour_contrast"], cc_in_deadeye["$pp_colour_contrast"]),
-		["$pp_colour_colour"] = Lerp(inde_fx_lerp, cc_no_deadeye["$pp_colour_colour"], cc_in_deadeye["$pp_colour_colour"]),
+		["$pp_colour_addr"] = Lerp(t, cc_no_deadeye["$pp_colour_addr"], cc_in["$pp_colour_addr"]),
+		["$pp_colour_addg"] = Lerp(t, cc_no_deadeye["$pp_colour_addg"], cc_in["$pp_colour_addg"]),
+		["$pp_colour_addb"] = Lerp(t, cc_no_deadeye["$pp_colour_addb"], cc_in["$pp_colour_addb"]),
+		["$pp_colour_brightness"] = Lerp(t, cc_no_deadeye["$pp_colour_brightness"], cc_in["$pp_colour_brightness"]),
+		["$pp_colour_contrast"] = Lerp(t, cc_no_deadeye["$pp_colour_contrast"], cc_in["$pp_colour_contrast"]),
+		["$pp_colour_colour"] = Lerp(t, cc_no_deadeye["$pp_colour_colour"], cc_in["$pp_colour_colour"]),
 	}
 
 	if rdrm.in_deadeye and not noggin then
-		cc["$pp_colour_brightness"] = Lerp(inde_fx_lerp, 0.8, cc_in_deadeye["$pp_colour_brightness"])
+		cc["$pp_colour_brightness"] = Lerp(t, 0.8, cc_in["$pp_colour_brightness"])
+		if t == 1 then noggin = false end
 	end
-
-	if inde_fx_lerp == 1 then noggin = true end
-	if noggin == true then inde_fx_lerp = 1 end
 
 	DrawColorModify(cc)
 
 	render.UpdateScreenEffectTexture()
 
-	vignettemat:SetFloat("$alpha", inde_fx_lerp)
+	vignettemat:SetFloat("$alpha", t)
 	render.SetMaterial(vignettemat)
 	render.DrawScreenQuad()
 end
@@ -544,15 +551,23 @@ hook.Add("RenderScreenspaceEffects", "rdrm_deadeye_effects", function()
 		distort_fx_lerp = math.Clamp(distort_fx_lerp - RealFrameTime() * 2, 0, 1)
 	end
 
+	node_fx_lerp = math.Clamp(node_fx_lerp - RealFrameTime() * 3, 0, 1)
+
 	if rdrm.in_killcam or rdrm.killcam_time > 0 then 
 		inde_fx_lerp = 0 
-		distort_fx_lerp = 0 
-		return 
+		distort_fx_lerp = 0
+		noggin = true
+		return
 	end
-	
+
 	if inde_fx_lerp > 0 then
 		draw_chams()
-		draw_screen_overlay()
-		draw_distortion()
+		draw_screen_overlay(inde_fx_lerp, cc_in_deadeye)
+		draw_distortion(distort_fx_lerp)
+	end
+
+	if node_fx_lerp > 0 then
+		draw_screen_overlay(node_fx_lerp, cc_empty_deadeye)
+		draw_distortion(node_fx_lerp)
 	end
 end)
