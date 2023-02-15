@@ -91,7 +91,7 @@ local function rdrm_killcam_apply(ent, ragdoll)
 	past_ten = false
 
 	rdrm.in_killcam = true
-	rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam})
+	rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, slowmotion=true})
 end
 
 hook.Add("CalcView", "rdrm_killcam_view", function(ply, pos, angles, fov)
@@ -135,7 +135,7 @@ hook.Add("Think", "rdrm_killcam_think", function()
 
 	if rdrm.killcam_time <= 0.15 and not past_breaking_point then
         rdrm.in_killcam = false
-		rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true})
+		rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})
 		past_breaking_point = true
 		if rdrm.in_deadeye then past_ten = true end
 	end

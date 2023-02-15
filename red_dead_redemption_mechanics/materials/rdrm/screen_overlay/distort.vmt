@@ -4,10 +4,10 @@
 	"$refractamount" "0"
 	"$forcerefract" "1"
 	"$model" "1"
-	"$refracttint" "{255 255 255}"
+	"$refracttint" "[1.75 1.75 1.75]"
 	"$normalmap" "rdrm/screen_overlay/invuln_overlay_normal"
 	"$bumpframe" "0"
-	"$bluramount" "5"
+	"$bluramount" "2"
 	"$refracttinttexture" "rdrm/screen_overlay/invuln_overlay"
 }
 

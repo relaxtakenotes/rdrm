@@ -59,7 +59,6 @@ local function toggle_deadeye()
 	timer.Simple(0.1, function() toggle_timeout = false end)
 
 	local lp = LocalPlayer()
-
 	if not rdrm.in_deadeye and (not lp:Alive() or not lp:GetActiveWeapon().Clip1 or lp:GetActiveWeapon():Clip1() == 0 or deadeye_timer < 1) then
 		lp:EmitSound("deadeye_click")
 		node_fx_lerp = 1
@@ -184,8 +183,6 @@ end
 
 hook.Add("rdrm_received_ragdoll_event", "rdrm_deadeye_ragdoll_event", function(owner, ragdoll)
 	if not transfer_marks:GetBool() then return end
-
-	print(owner, ragdoll)
 	
 	owner.rdrm_stop_render = true
 	ragdoll.rdrm_force_render = true
@@ -202,7 +199,6 @@ end)
 
 net.Receive("rdrm_deadeye_fire_bullet", function() 
 	if not rdrm.in_deadeye then return end
-	print("deleted", engine.TickCount())
 
 	local lp = LocalPlayer()
 	local weapon = lp:GetActiveWeapon()
@@ -262,16 +258,15 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 			pitch_changing = true
 		end
 
-		if not lp:Alive() then
+		if not lp:Alive() or lp:GetActiveWeapon() == NULL then
 			toggle_deadeye()
-			print(debug.getinfo(1).currentline)
 		end
 
 		update_marks()
 		last_mark = current_mark
 		current_mark = deadeye_marks[1]
 
-		if table.Count(deadeye_marks) >= lp:GetActiveWeapon():Clip1() or cmd:KeyDown(IN_ATTACK) or deadeye_timer <= 0 then
+		if lp:Alive() and lp:GetActiveWeapon() != NULL and (table.Count(deadeye_marks) >= lp:GetActiveWeapon():Clip1() or cmd:KeyDown(IN_ATTACK) or deadeye_timer <= 0) then
 			shooting_quota = table.Count(deadeye_marks)
 		end
 
@@ -284,18 +279,15 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 			shooting_quota = 0
 			if mark_added or deadeye_timer <= 0 then
 				toggle_deadeye()
-				print(debug.getinfo(1).currentline, rdrm.in_killcam, rdrm.in_deadeye)
 			end
 		end
 
 		if cmd:KeyDown(IN_ATTACK) and not mark_added then
 			toggle_deadeye()
-			print(debug.getinfo(1).currentline)
 		end
 
-		if not lp:GetActiveWeapon().Clip1 or lp:GetActiveWeapon():Clip1() == 0 then
+		if lp:Alive() and lp:GetActiveWeapon() != NULL and (not lp:GetActiveWeapon().Clip1 or lp:GetActiveWeapon():Clip1() == 0) then
 			toggle_deadeye()
-			print(debug.getinfo(1).currentline)
 		end
 
 		if shooting_quota > 0 and table.Count(deadeye_marks) > 0 then
@@ -310,24 +302,25 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 		elseif shooting_quota > 0 and table.Count(deadeye_marks) > 0 then
 			no_ammo_spent_timer = math.Clamp(no_ammo_spent_timer + engine.TickInterval() / 5, 0, 1)
 			currently_waiting = false
-		end
+		end	
 
 		if current_mark and IsValid(current_mark.entity) and (cmd:KeyDown(IN_ATTACK) or already_aiming) then
 			local interval = math.Clamp(RealFrameTime(), 0, engine.TickInterval())
 			local actual_shoot_position = lp:GetShootPos() + (lp:GetVelocity() - current_mark.entity:GetVelocity()) * interval
 			local aimangles = (current_mark.pos - actual_shoot_position):Angle()
-
+			
 			aim_lerp = math.Clamp(aim_lerp + RealFrameTime() * 3 + 0.01, 0, 1)
-
+			
 			local lerped_angles = LerpAngle(math.ease.InOutCubic(aim_lerp), start_angle, aimangles)
-			cmd:SetViewAngles(lerped_angles)
 
+			cmd:SetViewAngles(lerped_angles)
+			
 			if aim_lerp < 1 then
 				cmd:RemoveKey(IN_ATTACK)
 			elseif not currently_waiting then
 				cmd:AddKey(IN_ATTACK)
 			end
-
+			
 			already_aiming = true
 		else
 			start_angle = lp:EyeAngles()
@@ -340,12 +333,6 @@ end)
 local deadeye_cross = Material("rdrm/deadeye/deadeye_cross")
 local deadeye_core = Material("rdrm/deadeye/deadeye_core")
 local deadeye_core_circle = Material("rdrm/deadeye/rpg_meter_track_9")
-local vignettemat = Material("rdrm/screen_overlay/vignette01")
-local distortmat = Material("rdrm/screen_overlay/distort")
-local ca_r = Material("rdrm/deadeye/chromatic_abberation/ca_r")
-local ca_g = Material("rdrm/deadeye/chromatic_abberation/ca_g")
-local ca_b = Material("rdrm/deadeye/chromatic_abberation/ca_b")
-local black = Material("vgui/black")
 local highlight = Material("rdrm/deadeye/chams/highlight")
 
 local cc_in_deadeye = {
@@ -374,7 +361,6 @@ local cc_empty_deadeye = {
 	["$pp_colour_contrast"] = cc_in_deadeye["$pp_colour_contrast"],
 	["$pp_colour_colour"] = cc_in_deadeye["$pp_colour_colour"],
 }
-
 
 local function draw_circ_bar(x, y, w, h, progress, color)
 	// https://gist.github.com/Joseph10112/6e6e896b5feee50f7aa2145aabaf6e8c
@@ -488,54 +474,6 @@ local function draw_chams()
 	end
 end
 
-local function draw_distortion(t)
-	render.UpdateScreenEffectTexture()
-
-	render.SetMaterial(distortmat)
-	distortmat:SetFloat("$refractamount", math.Remap(math.ease.InQuart(t), 0, 1, 0, 0.15))
-	render.DrawScreenQuad()
-
-	local mult = math.ease.InQuart(t) * 2
-	
-	render.UpdateScreenEffectTexture()
-	
-	render.SetMaterial(black)
-	render.DrawScreenQuad()
-	render.SetMaterial(ca_r)
-	render.DrawScreenQuadEx(-8 * mult, -4 * mult, ScrW() + 16 * mult, ScrH() + 8 * mult)
-	render.SetMaterial(ca_g)
-	render.DrawScreenQuadEx(-4 * mult, -2 * mult, ScrW() + 8 * mult, ScrH() + 4 * mult)
-	render.SetMaterial(ca_b)
-	render.DrawScreenQuad()	
-end
-
-local noggin = false
-local function draw_screen_overlay(t, cc_in)
-	render.UpdateScreenEffectTexture()
-
-	local cc = {
-		["$pp_colour_addr"] = Lerp(t, cc_no_deadeye["$pp_colour_addr"], cc_in["$pp_colour_addr"]),
-		["$pp_colour_addg"] = Lerp(t, cc_no_deadeye["$pp_colour_addg"], cc_in["$pp_colour_addg"]),
-		["$pp_colour_addb"] = Lerp(t, cc_no_deadeye["$pp_colour_addb"], cc_in["$pp_colour_addb"]),
-		["$pp_colour_brightness"] = Lerp(t, cc_no_deadeye["$pp_colour_brightness"], cc_in["$pp_colour_brightness"]),
-		["$pp_colour_contrast"] = Lerp(t, cc_no_deadeye["$pp_colour_contrast"], cc_in["$pp_colour_contrast"]),
-		["$pp_colour_colour"] = Lerp(t, cc_no_deadeye["$pp_colour_colour"], cc_in["$pp_colour_colour"]),
-	}
-
-	if rdrm.in_deadeye and not noggin then
-		cc["$pp_colour_brightness"] = Lerp(t, 0.8, cc_in["$pp_colour_brightness"])
-		if t == 1 then noggin = false end
-	end
-
-	DrawColorModify(cc)
-
-	render.UpdateScreenEffectTexture()
-
-	vignettemat:SetFloat("$alpha", t)
-	render.SetMaterial(vignettemat)
-	render.DrawScreenQuad()
-end
-
 hook.Add("HUDPaint", "rdrm_deadeye_hud", function() 
 	draw_hud()
 	draw_marks()
@@ -546,7 +484,7 @@ hook.Add("RenderScreenspaceEffects", "rdrm_deadeye_effects", function()
 		inde_fx_lerp = math.Clamp(inde_fx_lerp + RealFrameTime() * 2.5, 0, 1)
 		distort_fx_lerp = math.Remap(deadeye_timer, 0, max_deadeye_timer:GetFloat(), 1, 0)
 	else
-		noggin = false
+		rdrm.noggin = false
 		inde_fx_lerp = math.Clamp(inde_fx_lerp - RealFrameTime() * 2.5, 0, 1)
 		distort_fx_lerp = math.Clamp(distort_fx_lerp - RealFrameTime() * 2, 0, 1)
 	end
@@ -556,18 +494,18 @@ hook.Add("RenderScreenspaceEffects", "rdrm_deadeye_effects", function()
 	if rdrm.in_killcam or rdrm.killcam_time > 0 then 
 		inde_fx_lerp = 0 
 		distort_fx_lerp = 0
-		noggin = true
+		rdrm.noggin = true
 		return
 	end
 
 	if inde_fx_lerp > 0 then
 		draw_chams()
-		draw_screen_overlay(inde_fx_lerp, cc_in_deadeye)
-		draw_distortion(distort_fx_lerp)
+		rdrm.draw_screen_overlay(inde_fx_lerp, cc_no_deadeye, cc_in_deadeye)
+		rdrm.draw_distortion(distort_fx_lerp)
 	end
 
 	if node_fx_lerp > 0 then
-		draw_screen_overlay(node_fx_lerp, cc_empty_deadeye)
-		draw_distortion(node_fx_lerp)
+		rdrm.draw_screen_overlay(node_fx_lerp, cc_no_deadeye, cc_empty_deadeye)
+		rdrm.draw_distortion(node_fx_lerp)
 	end
 end)

@@ -60,10 +60,9 @@ local function broadcast_shot(data)
     if data.Entity:IsPlayer() then
         local delay = 0
 
-        if rdrm.in_deadeye[data.Entity] and math.abs(rdrm.timescale - game.GetTimeScale()) < 0.01 then
+        if game.SinglePlayer() and rdrm.in_deadeye[data.Entity] and math.abs(rdrm.timescale - game.GetTimeScale()) < 0.01 then
     		delay = math.abs((data.Weapon:GetNextPrimaryFire() - CurTime()) * rdrm.timescale)
     		data.Weapon:SetNextPrimaryFire(CurTime() + delay)
-            print(delay)
         else
             delay = math.abs(data.Weapon:GetNextPrimaryFire() - CurTime())
         end
@@ -100,6 +99,8 @@ end
 hook.Add("PlayerTick", "rdrm_make_weapons_behave", function(ply, cmd)
 	if rdrm.in_deadeye[ply] then
 		local weapon = ply:GetActiveWeapon()
+
+        if weapon == NULL or not weapon then return end
         
 		ply:SetViewPunchAngles(Angle(0, 0, 0))
 		ply:SetViewPunchVelocity(Angle(0, 0, 0))
