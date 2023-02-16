@@ -2,4 +2,4 @@
 Not really meant for public use yet. However I'm not stopping you!<br>
 All commands start with cl_rdrm_<br>
 All features are subject to change.<br>
-Planned: Finish deadeye vfx, add low hp vfx, perhaps do health and core mechanics too...
+Planned: Possibly a core system (health, energy, deadeye)
