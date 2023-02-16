@@ -53,6 +53,7 @@ local function get_hitbox_matrix(ent, hitboxid)
 end
 
 local function toggle_deadeye()
+	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if rdrm.in_killcam then return end
 	if toggle_timeout then return end
 	toggle_timeout = true
@@ -95,6 +96,7 @@ local function toggle_deadeye()
 end
 
 local function create_mark() 
+	if max_deadeye_timer:GetFloat() <= 0 then return end
 	local lp = LocalPlayer()
 
 	if not rdrm.in_deadeye then return end
@@ -182,6 +184,7 @@ local function update_marks()
 end
 
 hook.Add("rdrm_received_ragdoll_event", "rdrm_deadeye_ragdoll_event", function(owner, ragdoll)
+	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if not transfer_marks:GetBool() then return end
 	
 	owner.rdrm_stop_render = true
@@ -197,7 +200,8 @@ hook.Add("rdrm_received_ragdoll_event", "rdrm_deadeye_ragdoll_event", function(o
 	end
 end)
 
-net.Receive("rdrm_deadeye_fire_bullet", function() 
+net.Receive("rdrm_deadeye_fire_bullet", function()
+	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if not rdrm.in_deadeye then return end
 
 	local lp = LocalPlayer()
@@ -236,6 +240,7 @@ net.Receive("rdrm_deadeye_fire_bullet", function()
 end)
 
 hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd) 
+	if max_deadeye_timer:GetFloat() <= 0 then return end
 	local lp = LocalPlayer()
 
 	if rdrm.in_deadeye then
@@ -475,11 +480,13 @@ local function draw_chams()
 end
 
 hook.Add("HUDPaint", "rdrm_deadeye_hud", function() 
+	if max_deadeye_timer:GetFloat() <= 0 then return end
 	draw_hud()
 	draw_marks()
 end)
 
 hook.Add("RenderScreenspaceEffects", "rdrm_deadeye_effects", function()
+	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if rdrm.in_deadeye then
 		inde_fx_lerp = math.Clamp(inde_fx_lerp + RealFrameTime() * 2.5, 0, 1)
 		distort_fx_lerp = math.Remap(deadeye_timer, 0, max_deadeye_timer:GetFloat(), 1, 0)

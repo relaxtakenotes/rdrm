@@ -158,11 +158,11 @@ hook.Add("rdrm_received_ragdoll_event", "rdrm_killcam_ragdoll_event", function(o
 end)
 
 local pp_in_killcam = {
-	["$pp_colour_addr"] = 1,
-	["$pp_colour_addg"] = 0.6,
+	["$pp_colour_addr"] = 0.5,
+	["$pp_colour_addg"] = 0.5,
 	["$pp_colour_addb"] = 0.7,
-	["$pp_colour_brightness"] = -0.6,
-	["$pp_colour_contrast"] = 0.8,
+	["$pp_colour_brightness"] = -0.36,
+	["$pp_colour_contrast"] = 0.7,
 	["$pp_colour_colour"] = 0.1,
 }
 

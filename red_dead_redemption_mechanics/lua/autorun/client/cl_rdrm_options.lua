@@ -11,6 +11,7 @@ hook.Add("PopulateToolMenu", "rdrm_settings_populate", function()
         panel:ControlHelp("Make sure keep corpses is enabled for this feature!")
     
         panel:NumSlider("Deadeye Time", "cl_rdrm_deadeye_timer", 0, 100, 1)
+        panel:ControlHelp("Set to 0 to disable deadeye.")
     
         panel:NumSlider("Deadeye indicator X offset", "cl_rdrm_deadeye_bar_offset_x", -9999, 9999, 1)
         panel:NumSlider("Deadeye indicator Y offset", "cl_rdrm_deadeye_bar_offset_y", -9999, 9999, 1)
