@@ -239,19 +239,11 @@ net.Receive("rdrm_deadeye_fire_bullet", function()
 	aim_lerp = 0
 end)
 
-hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd) 
+local aimangles = Angle()
+
+hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 	if max_deadeye_timer:GetFloat() <= 0 then return end
 	local lp = LocalPlayer()
-
-	if rdrm.in_deadeye then
-		deadeye_timer = math.Clamp(deadeye_timer - RealFrameTime(), 0, max_deadeye_timer:GetFloat())
-	else
-		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime() / 3, 0, max_deadeye_timer:GetFloat())
-	end
-
-	if infinite_mode:GetBool() then
-		deadeye_timer = max_deadeye_timer:GetFloat()
-	end
 
 	if rdrm.in_deadeye then
 		if SetViewPunchAngles then
@@ -310,28 +302,51 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 		end	
 
 		if current_mark and IsValid(current_mark.entity) and (cmd:KeyDown(IN_ATTACK) or already_aiming) then
-			local interval = math.Clamp(RealFrameTime(), 0, engine.TickInterval())
-			local actual_shoot_position = lp:GetShootPos() + (lp:GetVelocity() - current_mark.entity:GetVelocity()) * interval
-			local aimangles = (current_mark.pos - actual_shoot_position):Angle()
-			
-			aim_lerp = math.Clamp(aim_lerp + RealFrameTime() * 3 + 0.01, 0, 1)
-			
-			local lerped_angles = LerpAngle(math.ease.InOutCubic(aim_lerp), start_angle, aimangles)
-
-			cmd:SetViewAngles(lerped_angles)
-			
 			if aim_lerp < 1 then
 				cmd:RemoveKey(IN_ATTACK)
 			elseif not currently_waiting then
 				cmd:AddKey(IN_ATTACK)
 			end
-			
-			already_aiming = true
-		else
-			start_angle = lp:EyeAngles()
-			aim_lerp = 0
-			already_aiming = false
 		end
+	end
+end)
+
+hook.Add("InputMouseApply", "rdrm_deadeye_mouse", function(cmd) 
+	if rdrm.in_deadeye and cmd:KeyDown(IN_ATTACK) then
+		cmd:SetMouseX(0)
+		cmd:SetMouseY(0)
+		return true
+	end
+end)
+
+hook.Add("Think", "rdrm_deadeye_think", function() 
+	local lp = LocalPlayer()
+
+	if rdrm.in_deadeye then
+		deadeye_timer = math.Clamp(deadeye_timer - RealFrameTime(), 0, max_deadeye_timer:GetFloat())
+	else
+		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime(), 0, max_deadeye_timer:GetFloat())
+	end
+
+	if infinite_mode:GetBool() then
+		deadeye_timer = max_deadeye_timer:GetFloat()
+	end
+
+	if current_mark and IsValid(current_mark.entity) and (lp:KeyDown(IN_ATTACK) or already_aiming) then
+		local actual_shoot_position = lp:GetShootPos() + (lp:GetVelocity() - current_mark.entity:GetVelocity()) * RealFrameTime()
+		local aimangles = (current_mark.pos - actual_shoot_position):Angle()
+		
+		aim_lerp = math.Clamp(aim_lerp + RealFrameTime() * 3 + 0.01, 0, 1)
+		
+		local lerped_angles = LerpAngle(math.ease.InOutCubic(aim_lerp), start_angle, aimangles)
+
+		lp:SetEyeAngles(lerped_angles)
+		
+		already_aiming = true
+	else
+		start_angle = lp:EyeAngles()
+		aim_lerp = 0
+		already_aiming = false
 	end
 end)
 

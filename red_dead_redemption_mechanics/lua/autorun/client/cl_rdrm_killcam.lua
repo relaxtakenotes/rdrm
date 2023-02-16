@@ -1,10 +1,11 @@
 print("cl_rdrm_killcam.lua loaded")
 
+rdrm.killcam_time = 0 // we need it even if we're in mp\
+
 if not game.SinglePlayer() then return end
 
 local chance = CreateConVar("cl_rdrm_killcam_chance", "0.35", {FCVAR_ARCHIVE}, "Normalized chance of the killcam starting to play.", 0, 10000)
 
-rdrm.killcam_time = 0
 local desired_angle = Angle()
 local desired_pos = Vector()
 local current_ent = NULL
