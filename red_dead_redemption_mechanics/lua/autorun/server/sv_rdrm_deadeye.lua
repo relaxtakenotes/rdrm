@@ -36,9 +36,16 @@ local function restore_vars()
 	end
 end
 
-function rdrm.deadeye_handle_accuracy(in_deadeye)
-    if in_deadeye then zero_out_vars() end
-    if not in_deadeye then restore_vars() end
+function rdrm.deadeye_handle_accuracy(ply, in_deadeye)
+    if not game.SinglePlayer() then return end
+    
+    if in_deadeye then
+        zero_out_vars() 
+    end
+
+    if not in_deadeye then 
+        restore_vars() 
+    end
 end
 
 function rdrm.deadeye_handle_ammo(ply)
