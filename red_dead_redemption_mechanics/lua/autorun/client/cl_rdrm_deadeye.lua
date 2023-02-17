@@ -184,6 +184,7 @@ local function update_marks()
 end
 
 hook.Add("rdrm_received_ragdoll_event", "rdrm_deadeye_ragdoll_event", function(owner, ragdoll)
+	deadeye_timer = deadeye_timer + 0.3
 	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if not transfer_marks:GetBool() then return end
 	
