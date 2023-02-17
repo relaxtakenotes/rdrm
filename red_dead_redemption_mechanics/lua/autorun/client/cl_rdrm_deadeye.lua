@@ -52,7 +52,6 @@ local function get_hitbox_matrix(ent, hitboxid)
 	return ent:GetBoneMatrix(ent:GetHitBoxBone(hitboxid, set_number))
 end
 
-
 local function toggle_deadeye()
 	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if rdrm.in_killcam then return end
@@ -185,7 +184,6 @@ local function update_marks()
 end
 
 hook.Add("rdrm_received_ragdoll_event", "rdrm_deadeye_ragdoll_event", function(owner, ragdoll)
-	deadeye_timer = deadeye_timer + 0.3
 	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if not transfer_marks:GetBool() then return end
 	
@@ -309,7 +307,6 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 			elseif not currently_waiting then
 				cmd:AddKey(IN_ATTACK)
 			end
-			already_aiming = true
 		end
 	end
 end)
@@ -340,11 +337,11 @@ hook.Add("Think", "rdrm_deadeye_think", function()
 		local aimangles = (current_mark.pos - actual_shoot_position):Angle()
 		
 		aim_lerp = math.Clamp(aim_lerp + RealFrameTime() * 3 + 0.01, 0, 1)
-
+		
 		local lerped_angles = LerpAngle(math.ease.InOutCubic(aim_lerp), start_angle, aimangles)
 
 		lp:SetEyeAngles(lerped_angles)
-
+		
 		already_aiming = true
 	else
 		start_angle = lp:EyeAngles()

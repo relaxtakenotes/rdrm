@@ -56,7 +56,7 @@ net.Receive("rdrm_request_change_state", function(len, ply)
 		end
 
 		if state_type == "in_deadeye" then
-			rdrm.deadeye_handle_accuracy(ply, state)
+			rdrm.deadeye_handle_accuracy(state)
 		end
 
 		if rdrm.in_deadeye[ply] and slowdown then
