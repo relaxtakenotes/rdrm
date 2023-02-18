@@ -37,6 +37,8 @@ end)
 hook.Add("RenderScreenspaceEffects", "rdrm_low_hp_effects", function() 
     local lp = LocalPlayer()
 
+    if rdrm.in_deadstate then return end
+
     if lp:Health() <= min_hp:GetFloat() then
         wish_intensity = math.Remap(lp:Health(), 0, min_hp:GetFloat(), 1, 0)
     else

@@ -5,6 +5,15 @@ rdrm.in_killcam = false
 rdrm.noggin = false // used for some color correction stuff
 
 sound.Add({
+	name = "rdrm_death",
+	channel = CHAN_STATIC,
+	volume = 1,
+	level = 0,
+	pitch = 100,
+	sound = {"rdrm/misc/rdrm_death.wav"} 
+})
+
+sound.Add({
 	name = "deadeye_start",
 	channel = CHAN_STATIC,
 	volume = 1.0,
@@ -137,4 +146,17 @@ end
 function rdrm.draw_distortion(t)
 	rdrm.draw_refraction(t)
 	rdrm.chromatic_abberation(t)
+end
+
+function rdrm.create_event(event_table, in_time_from_now, event_function)
+	table.insert(event_table, {func=event_function, tickcount=engine.TickCount(), offset=math.floor(in_time_from_now / engine.TickInterval())})
+end
+
+function rdrm.execute_events(event_table)
+	for i, event in ipairs(event_table) do
+		if engine.TickCount() >= event.tickcount + event.offset * game.GetTimeScale() then
+			event.func()
+			table.remove(event_table, i)
+		end
+	end
 end

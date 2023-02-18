@@ -1,10 +1,13 @@
 print("cl_rdrm_killcam.lua loaded")
 
 rdrm.killcam_time = 0 // we need it even if we're in mp\
+rdrm.killcam_willswitch = false
+rdrm.switch_to_local = false
 
 if not game.SinglePlayer() then return end
 
 local chance = CreateConVar("cl_rdrm_killcam_chance", "0.35", {FCVAR_ARCHIVE}, "Normalized chance of the killcam starting to play.", 0, 10000)
+local filter = CreateConVar("cl_rdrm_killcam_filter", "1", {FCVAR_ARCHIVE}, "Allow FX to work.", 0, 1)
 
 local desired_angle = Angle()
 local desired_pos = Vector()
@@ -13,6 +16,8 @@ local switched = false
 local sent = false
 local past_breaking_point = false
 local past_ten = false
+
+local events = {}
 
 local function is_usable_for_killcam(ent)
 	if not IsValid(ent) or not ent.GetModel or not ent.GetClass then return false end
@@ -88,8 +93,38 @@ local function rdrm_killcam_apply(ent, ragdoll)
 	current_ent = ragdoll
 	set_random_angle(ent)
 	rdrm.killcam_time = 1
-	past_breaking_point = false
-	past_ten = false
+
+	rdrm.killcam_willswitch = math.Rand(0, 1) > 0.35
+	rdrm.switch_to_local = math.Rand(0, 1) > 0.6
+
+	if rdrm.killcam_willswitch then
+		rdrm.create_event(events, 2.5, function()
+			if rdrm.switch_to_local then
+				set_random_angle(LocalPlayer())
+			else
+				set_random_angle(current_ent)
+			end
+		end)
+
+		rdrm.create_event(events, 5, function()
+			rdrm.in_killcam = false
+			rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})			
+		end)
+
+		rdrm.create_event(events, 5, function() 
+			if filter:GetBool() and not rdrm.in_deadeye then LocalPlayer():EmitSound("deadeye_end") end 
+		end)
+	else
+		rdrm.create_event(events, 2.5, function()
+			rdrm.in_killcam = false
+			rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})			
+		end)
+
+		rdrm.create_event(events, 2.3, function() 
+			if filter:GetBool() and not rdrm.in_deadeye then LocalPlayer():EmitSound("deadeye_end") end 
+			rdrm.killcam_time = 0.15
+		end)
+	end
 
 	rdrm.in_killcam = true
 	rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, slowmotion=true})
@@ -109,43 +144,8 @@ hook.Add("CalcView", "rdrm_killcam_view", function(ply, pos, angles, fov)
 end)
 
 hook.Add("Think", "rdrm_killcam_think", function()
-	if rdrm.killcam_time == 0 and not sent then
-		switched = false
-		sent = true
-		past_breaking_point = false
-		past_ten = false
-	end
+	rdrm.execute_events(events)
 
-	if rdrm.killcam_time == 0 then return end
-
-	if rdrm.killcam_time <= 0.5 and not switched then
-		local will_switch = math.Rand(0, 1) > 0.35
-		local switch_to_local = math.Rand(0, 1) > 0.6
-
-		if will_switch then
-			if switch_to_local then
-				set_random_angle(LocalPlayer())
-			else
-				set_random_angle(current_ent)
-			end
-		else
-			rdrm.killcam_time = 0.15
-		end
-		switched = true
-	end
-
-	if rdrm.killcam_time <= 0.15 and not past_breaking_point then
-        rdrm.in_killcam = false
-		rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})
-		past_breaking_point = true
-		if rdrm.in_deadeye then past_ten = true end
-	end
-
-	if rdrm.killcam_time <= 0.05 and not past_ten then
-		LocalPlayer():EmitSound("deadeye_end")
-		past_ten = true
-	end
-	
 	rdrm.killcam_time = math.Clamp(rdrm.killcam_time - RealFrameTime() / 5, 0, 1)
 end)
 
@@ -183,6 +183,8 @@ local need_to_fade = false
 local fade_lerp = 0
 
 hook.Add("RenderScreenspaceEffects", "zzzxczxc_rdrm_killcam_overlay", function()
+	if not filter:GetBool() then return end
+
 	if rdrm.killcam_time > 0 then
 		need_to_fade = true
 
