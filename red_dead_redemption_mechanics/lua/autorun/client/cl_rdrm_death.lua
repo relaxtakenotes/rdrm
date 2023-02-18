@@ -12,8 +12,9 @@ local events = {}
 
 net.Receive("rdrm_player_death", function()
     if not allow_death_effect:GetBool() then return end
-
-    LocalPlayer():EmitSound("rdrm_death")
+    RunConsoleCommand("stopsound")
+    timer.Simple(0, function() LocalPlayer():EmitSound("rdrm_death") end)
+    
 
     rdrm.in_deadstate = true
     brightness_lerp = 1

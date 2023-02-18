@@ -106,22 +106,17 @@ local function rdrm_killcam_apply(ent, ragdoll)
 			end
 		end)
 
-		rdrm.create_event(events, 5, function()
+		rdrm.create_event(events, 4.6, function()
 			rdrm.in_killcam = false
 			rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})			
-		end)
-
-		rdrm.create_event(events, 5, function() 
-			if filter:GetBool() and not rdrm.in_deadeye then LocalPlayer():EmitSound("deadeye_end") end 
 		end)
 	else
-		rdrm.create_event(events, 2.5, function()
+		rdrm.create_event(events, 2.6, function()
 			rdrm.in_killcam = false
 			rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})			
 		end)
 
-		rdrm.create_event(events, 2.3, function() 
-			if filter:GetBool() and not rdrm.in_deadeye then LocalPlayer():EmitSound("deadeye_end") end 
+		rdrm.create_event(events, 2.4, function() 
 			rdrm.killcam_time = 0.15
 		end)
 	end
