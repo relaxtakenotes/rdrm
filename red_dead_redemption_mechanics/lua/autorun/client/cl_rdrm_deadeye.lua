@@ -320,13 +320,27 @@ hook.Add("InputMouseApply", "rdrm_deadeye_mouse", function(cmd)
 	end
 end)
 
+local whiffing_the_cig = 0
+
 hook.Add("Think", "rdrm_deadeye_think", function() 
 	local lp = LocalPlayer()
 
 	if rdrm.in_deadeye then
 		deadeye_timer = math.Clamp(deadeye_timer - RealFrameTime(), 0, max_deadeye_timer:GetFloat())
 	else
-		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime(), 0, max_deadeye_timer:GetFloat())
+		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime() / 4, 0, max_deadeye_timer:GetFloat())
+	end
+
+	if lp:GetActiveWeapon() != NULL and lp:GetActiveWeapon():GetClass() == "weapon_ciga" and lp:KeyDown(IN_ATTACK) then
+		whiffing_the_cig = whiffing_the_cig + RealFrameTime()
+		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime() / 2, 0, max_deadeye_timer:GetFloat())
+	else
+		whiffing_the_cig = 0
+	end
+
+	if whiffing_the_cig > 5.4 then
+		deadeye_timer = deadeye_timer - deadeye_timer/2
+		whiffing_the_cig = 0
 	end
 
 	if infinite_mode:GetBool() then

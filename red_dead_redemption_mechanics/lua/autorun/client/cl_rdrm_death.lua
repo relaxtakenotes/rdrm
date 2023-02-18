@@ -20,12 +20,12 @@ net.Receive("rdrm_player_death", function()
     death_angle_offset = 0
     rdrm.change_state({state_type="in_deadstate", state=rdrm.in_deadstate, slowmotion=true})
 
-    rdrm.create_event(events, 4, function()
+    rdrm.create_event(events, 6, function()
         blackout_lerp = 1
         allow_blackout = true
     end)
 
-    rdrm.create_event(events, 6, function() 
+    rdrm.create_event(events, 8, function() 
         rdrm.change_state({state_type="in_deadstate", state=false, slowmotion=true, smooth=true})
     end)
 end)
@@ -88,9 +88,9 @@ hook.Add("RenderScreenspaceEffects", "rdrm_death_effect", function()
     if rdrm.spawning then
         brightness_lerp = math.Clamp(brightness_lerp - RealFrameTime() / 4, 0, 1)
     else
-        brightness_lerp = math.Clamp(brightness_lerp - RealFrameTime() / 5, 0, 1)
+        brightness_lerp = math.Clamp(brightness_lerp - RealFrameTime() / 8, 0, 1)
     end
-    blackout_lerp = math.Clamp(blackout_lerp - RealFrameTime() / 1.5, 0, 1)
+    blackout_lerp = math.Clamp(blackout_lerp - RealFrameTime() / 2, 0, 1)
 
     if rdrm.in_deadstate then
         rdrm.draw_vignette(brightness_lerp)
@@ -99,7 +99,7 @@ hook.Add("RenderScreenspaceEffects", "rdrm_death_effect", function()
         DrawColorModify(cc_in_deadstate)
         DrawColorModify(cc_no_color)
         
-        DrawBloom(0.5, 2 * brightness_lerp * 1.5, 16, 16, 2, 1, 1, 1, 1)
+        DrawBloom(0.5, 2 * brightness_lerp, 16, 16, 2, 1, 1, 1, 1)
         local cc = table.Copy(cc_bright)
         cc["$pp_colour_brightness"] = Lerp(brightness_lerp, 0, cc["$pp_colour_brightness"])
         cc["$pp_colour_contrast"] = Lerp(brightness_lerp, 1, cc["$pp_colour_contrast"])
@@ -126,7 +126,7 @@ end)
 hook.Add("CalcView", "rdrm_death_effect_view", function(ply, pos, angles, fov) 
     if not rdrm.in_deadstate then return end
 
-    death_angle_offset = math.Clamp(death_angle_offset + RealFrameTime() / 10, 0, 1)
+    death_angle_offset = math.Clamp(death_angle_offset + RealFrameTime() / 18, 0, 1)
 
     local angle_sway = Angle(
         math.sin(death_angle_offset * 2 + RealTime()) * 5,
