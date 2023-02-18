@@ -308,7 +308,10 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 			elseif not currently_waiting then
 				cmd:AddKey(IN_ATTACK)
 			end
+			already_aiming = true
 		end
+
+		
 	end
 end)
 
@@ -363,6 +366,7 @@ hook.Add("Think", "rdrm_deadeye_think", function()
 		aim_lerp = 0
 		already_aiming = false
 	end
+	
 end)
 
 local deadeye_cross = Material("rdrm/deadeye/deadeye_cross")

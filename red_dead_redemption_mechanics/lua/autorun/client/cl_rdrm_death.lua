@@ -113,6 +113,7 @@ hook.Add("RenderScreenspaceEffects", "rdrm_death_effect", function()
     end
 
     if rdrm.spawning then
+        allow_blackout = false
         DrawBloom(0.5, 2 * brightness_lerp * 1.5, 16, 16, 2, 1, 1, 1, 1)
         local cc = table.Copy(cc_bright)
         cc["$pp_colour_brightness"] = Lerp(math.ease.InCubic(brightness_lerp), 0, cc["$pp_colour_brightness"])
