@@ -132,8 +132,4 @@ if game.SinglePlayer() then
 			end)
 		end
 	end)
-
-	hook.Add("EntityEmitSound", "rdrm_death_effect_mute", function() 
-		--if rdrm.in_deadstate then return false end
-	end)
 end

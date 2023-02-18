@@ -12,10 +12,9 @@ local events = {}
 
 net.Receive("rdrm_player_death", function()
     if not allow_death_effect:GetBool() then return end
-    RunConsoleCommand("stopsound")
-    timer.Simple(0, function() LocalPlayer():EmitSound("rdrm_death") end)
-    
 
+    LocalPlayer():EmitSound("rdrm_death")
+    
     rdrm.in_deadstate = true
     brightness_lerp = 1
     death_angle_offset = 0
@@ -75,7 +74,7 @@ local cc_bright = {
 	["$pp_colour_addr"] = 0,
 	["$pp_colour_addg"] = 0,
 	["$pp_colour_addb"] = 0,
-	["$pp_colour_brightness"] = 1,
+	["$pp_colour_brightness"] = 0.8,
 	["$pp_colour_contrast"] = 1,
 	["$pp_colour_colour"] = 0.2,
 }
