@@ -93,7 +93,7 @@ local function arc9_detour(args)
     bullet.rdrm_detected = true
     attacker.rdrm_fired_in_same_tick = true
 
-    timer.Simple(engine.TickInterval()*2, function() attacker.rdrm_fired_in_same_tick = false end)
+    timer.Simple(engine.TickInterval(), function() attacker.rdrm_fired_in_same_tick = false end)
 end
 
 hook.Add("PlayerTick", "rdrm_make_weapons_behave", function(ply, cmd)
@@ -143,7 +143,7 @@ hook.Add("InitPostEntity", "rdrm_init_pb_hooks", function()
             if entity.rdrm_fired_in_same_tick == nil then entity.rdrm_fired_in_same_tick = false end
             if entity.rdrm_fired_in_same_tick then return end
             entity.rdrm_fired_in_same_tick = true
-            timer.Simple(engine.TickInterval()*2, function() entity.rdrm_fired_in_same_tick = false end)
+            timer.Simple(engine.TickInterval(), function() entity.rdrm_fired_in_same_tick = false end)
 
             local data = {}
             data.Entity = latest_pb["inflictor"]:GetOwner()
@@ -165,7 +165,7 @@ hook.Add("InitPostEntity", "rdrm_init_pb_hooks", function()
             if entity.rdrm_fired_in_same_tick == nil then entity.rdrm_fired_in_same_tick = false end
             if entity.rdrm_fired_in_same_tick then return end
             entity.rdrm_fired_in_same_tick = true
-            timer.Simple(engine.TickInterval()*2, function() entity.rdrm_fired_in_same_tick = false end)
+            timer.Simple(engine.TickInterval(), function() entity.rdrm_fired_in_same_tick = false end)
 
             local weapon = latest_pb["Weapon"]
 
@@ -189,7 +189,7 @@ hook.Add("InitPostEntity", "rdrm_init_pb_hooks", function()
                 if entity.rdrm_fired_in_same_tick == nil then entity.rdrm_fired_in_same_tick = false end
                 if entity.rdrm_fired_in_same_tick then return end
                 entity.rdrm_fired_in_same_tick = true
-                timer.Simple(engine.TickInterval()*2, function() entity.rdrm_fired_in_same_tick = false end)
+                timer.Simple(engine.TickInterval(), function() entity.rdrm_fired_in_same_tick = false end)
 
                 local data = {}
                 data.Entity = attacker
@@ -249,7 +249,7 @@ hook.Add("EntityFireBullets", "rdrm_entity_fire_bullets", function(attacker, dat
         if entity.rdrm_fired_in_same_tick == nil then entity.rdrm_fired_in_same_tick = false end
         if entity.rdrm_fired_in_same_tick then return end
         entity.rdrm_fired_in_same_tick = true
-        timer.Simple(engine.TickInterval()*2, function() entity.rdrm_fired_in_same_tick = false end)
+        timer.Simple(engine.TickInterval(), function() entity.rdrm_fired_in_same_tick = false end)
                                                                                              
         if #data.AmmoType > 2 then ammotype = data.AmmoType elseif weapon.Primary then ammotype = weapon.Primary.Ammo end
 
@@ -267,5 +267,5 @@ hook.Add("EntityFireBullets", "rdrm_entity_fire_bullets", function(attacker, dat
 end)
 
 hook.Add("EntityTakeDamage", "rdrm_absorb_damage", function(ent, dmg) 
-    if ent:IsPlayer() and rdrm.in_deadeye[ent] and dmg:GetAttacker():IsNPC() and math.random(0, 1) then return true end
+    if ent:IsPlayer() and rdrm.in_deadeye[ent] and dmg:GetAttacker():IsNPC() and math.Rand(0, 1) > 0.5 then return true end
 end)

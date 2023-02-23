@@ -1,6 +1,6 @@
 "VertexLitGeneric" {
 	"$basetexture" "vgui/white"
-	"$bumpmap" "models/player/shared/shared_normal"
+	"$bumpmap" "rdrm/deadeye/chams/shared_normal"
 	"$envmap" "vgui/white"
 	"$envmapfresnel" "1"
 	"$phong" "1"

@@ -62,6 +62,7 @@ local function set_random_angle(ent)
 		})
 
 		if iter > 20 then
+			if tr_f.StartSolid or tr_t.StartSolid then offset:Rotate(120) end
 			break
 		end
 
@@ -70,7 +71,7 @@ local function set_random_angle(ent)
 			continue
 		end
 
-		if not (tr_f.HitPos:IsEqualTol(pos + offset, 10) and tr_t.HitPos:IsEqualTol(pos, 10) and not tr_f.Hit and not tr_t.Hit and not tr_f.StartSolid and not tr_t.StartSolid) then
+		if not (tr_f.HitPos:IsEqualTol(pos + offset, 10) and tr_t.HitPos:IsEqualTol(pos, 10)) then
 			continue
 		end
 

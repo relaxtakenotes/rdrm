@@ -132,8 +132,17 @@ local function create_mark()
 	end
 
 	local hitbox_matrix = get_hitbox_matrix(vtr.Entity, vtr.HitBox)
-	local precision_multiplier = math.Remap(vtr.Fraction, 0, 1, 1, 10)
-	vtr.HitPos = vtr.HitPos + (hitbox_matrix:GetTranslation() - vtr.HitPos):GetNormalized() * precision_multiplier + vtr.Normal * 2
+	//local precision_multiplier = math.Remap(vtr.Fraction, 0, 1, 1, 10)
+	//vtr.HitPos = vtr.HitPos + (hitbox_matrix:GetTranslation() - vtr.HitPos):GetNormalized() * precision_multiplier + vtr.Normal * 2
+
+	local distance = vtr.StartPos:Distance(vtr.HitPos)
+	if distance > 1000 then
+		vtr.HitPos = hitbox_matrix:GetTranslation()
+	else
+		local precision = math.Remap(vtr.StartPos:Distance(vtr.HitPos), 0, 1000, 1, 5)
+		vtr.HitPos = vtr.HitPos + (hitbox_matrix:GetTranslation() - vtr.HitPos):GetNormalized() * precision + vtr.Normal * 2
+	end
+
 
 	local data = {
 		pos = hitbox_matrix:GetTranslation(),
