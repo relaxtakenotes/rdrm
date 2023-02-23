@@ -61,7 +61,7 @@ local function broadcast_shot(data)
         local delay = 0
 
         if game.SinglePlayer() and rdrm.in_deadeye[data.Entity] and math.abs(rdrm.timescale - game.GetTimeScale()) < 0.01 then
-    		delay = math.abs((data.Weapon:GetNextPrimaryFire() - CurTime()) * rdrm.timescale)
+    		delay = math.max((data.Weapon:GetNextPrimaryFire() - CurTime()) * rdrm.timescale, 0.005)
     		data.Weapon:SetNextPrimaryFire(CurTime() + delay)
         else
             delay = math.abs(data.Weapon:GetNextPrimaryFire() - CurTime())

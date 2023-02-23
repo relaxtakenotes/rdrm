@@ -12,6 +12,7 @@ hook.Add("PopulateToolMenu", "rdrm_settings_populate", function()
     
         panel:NumSlider("Deadeye Time", "cl_rdrm_deadeye_timer", 0, 100, 1)
         panel:ControlHelp("Set to 0 to disable deadeye.")
+        panel:NumSlider("Deadeye Refill Multiplier", "cl_rdrm_deadeye_refill_multiplier", 0, 10, 1)
     
         panel:NumSlider("Deadeye indicator X offset", "cl_rdrm_deadeye_bar_offset_x", -9999, 9999, 1)
         panel:NumSlider("Deadeye indicator Y offset", "cl_rdrm_deadeye_bar_offset_y", -9999, 9999, 1)
@@ -21,6 +22,7 @@ hook.Add("PopulateToolMenu", "rdrm_settings_populate", function()
     spawnmenu.AddToolMenuOption("Options", "rdrm_8841_tool", "rdrm_8841_killcam", "Killcam", nil, nil, function(panel)
         panel:ClearControls()
         panel:NumSlider("Killcam Chance", "cl_rdrm_killcam_chance", 0, 1, 2)
+        panel:NumSlider("Killcam Length Multiplier", "cl_rdrm_killcam_length", 0, 5, 2)
         panel:CheckBox("Killcam FX", "cl_rdrm_killcam_filter")
         panel:ControlHelp("Enable all those shmancy effects")
     end)
@@ -37,7 +39,14 @@ hook.Add("PopulateToolMenu", "rdrm_settings_populate", function()
         panel:ClearControls()
         panel:CheckBox("Allow death effect", "cl_rdrm_death_effect_enabled")
         panel:CheckBox("Allow spawn effect", "cl_rdrm_spawn_effect_enabled")
-    end)   
+    end)
+
+    spawnmenu.AddToolMenuOption("Options", "rdrm_8841_tool", "rdrm_8841_default", "Reset to Default", nil, nil, function(panel)
+        panel:ClearControls()
+        panel:Button("Reset", "cl_rdrm_default")
+    end)
+
+    
 end)
 
 hook.Add("AddToolMenuCategories", "rdrm_add_category", function() 

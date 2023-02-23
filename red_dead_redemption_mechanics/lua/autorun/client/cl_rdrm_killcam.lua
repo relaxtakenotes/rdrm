@@ -8,6 +8,7 @@ if not game.SinglePlayer() then return end
 
 local chance = CreateConVar("cl_rdrm_killcam_chance", "0.35", {FCVAR_ARCHIVE}, "Normalized chance of the killcam starting to play.", 0, 10000)
 local filter = CreateConVar("cl_rdrm_killcam_filter", "1", {FCVAR_ARCHIVE}, "Allow FX to work.", 0, 1)
+local length_mult = CreateConVar("cl_rdrm_killcam_length", "1", {FCVAR_ARCHIVE}, "Length Multiplier.", 0, 5)
 
 local desired_angle = Angle()
 local desired_pos = Vector()
@@ -99,7 +100,7 @@ local function rdrm_killcam_apply(ent, ragdoll)
 	rdrm.switch_to_local = math.Rand(0, 1) > 0.6
 
 	if rdrm.killcam_willswitch then
-		rdrm.create_event(events, 2.5, function()
+		rdrm.create_event(events, 2.5 * length_mult:GetFloat(), function()
 			if rdrm.switch_to_local then
 				set_random_angle(LocalPlayer())
 			else
@@ -107,18 +108,18 @@ local function rdrm_killcam_apply(ent, ragdoll)
 			end
 		end)
 
-		rdrm.create_event(events, 4.6, function()
+		rdrm.create_event(events, 4.6 * length_mult:GetFloat(), function()
 			rdrm.in_killcam = false
 			rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})			
 		end)
 	else
-		rdrm.create_event(events, 2.6, function()
+		rdrm.create_event(events, 2.6 * length_mult:GetFloat(), function()
 			rdrm.in_killcam = false
 			rdrm.change_state({state_type="in_killcam", state=rdrm.in_killcam, smooth=true, slowmotion=true})			
 		end)
 
-		rdrm.create_event(events, 2.4, function() 
-			rdrm.killcam_time = 0.15
+		rdrm.create_event(events, 2.4 * length_mult:GetFloat(), function() 
+			rdrm.killcam_time = 0.15 * length_mult:GetFloat()
 		end)
 	end
 
@@ -142,7 +143,7 @@ end)
 hook.Add("Think", "rdrm_killcam_think", function()
 	rdrm.execute_events(events)
 
-	rdrm.killcam_time = math.Clamp(rdrm.killcam_time - RealFrameTime() / 5, 0, 1)
+	rdrm.killcam_time = math.Clamp(rdrm.killcam_time - RealFrameTime() / 5 / length_mult:GetFloat(), 0, 1)
 end)
 
 hook.Add("HUDShouldDraw", "rdrm_killcam_hide_hud", function(element) 

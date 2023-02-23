@@ -67,6 +67,30 @@ sound.Add({
 	sound = "rdrm/killcam/bloodsplatter.wav"
 })
 
+concommand.Add("cl_rdrm_default", function() 
+	GetConVar("cl_rdrm_deadeye_slowdown"):Revert()
+	GetConVar("cl_rdrm_deadeye_bar_mode"):Revert()
+	GetConVar("cl_rdrm_deadeye_bar_offset_x"):Revert()
+	GetConVar("cl_rdrm_deadeye_bar_offset_y"):Revert()
+	GetConVar("cl_rdrm_deadeye_bar_size"):Revert()
+	GetConVar("cl_rdrm_deadeye_infinite"):Revert()
+	GetConVar("cl_rdrm_deadeye_transfer_to_ragdolls"):Revert()
+	GetConVar("cl_rdrm_deadeye_debug"):Revert()
+	GetConVar("cl_rdrm_deadeye_timer"):Revert()
+	GetConVar("cl_rdrm_deadeye_refill_multiplier"):Revert()
+
+	GetConVar("cl_rdrm_death_effect_enabled"):Revert()
+	GetConVar("cl_rdrm_spawn_effect_enabled"):Revert()
+
+	GetConVar("cl_rdrm_killcam_chance"):Revert()
+	GetConVar("cl_rdrm_killcam_filter"):Revert()
+	GetConVar("cl_rdrm_killcam_length"):Revert()
+
+	GetConVar("cl_rdrm_low_hp_trigger"):Revert()
+	GetConVar("cl_rdrm_low_hp_sway"):Revert()
+	GetConVar("cl_rdrm_low_hp_sway_mult"):Revert()
+end)
+
 net.Receive("rdrm_ragdoll_spawned", function()
 	local owner = net.ReadEntity()
 	local ragdoll = net.ReadEntity()

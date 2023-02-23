@@ -10,6 +10,7 @@ local infinite_mode = CreateConVar("cl_rdrm_deadeye_infinite", "0", {FCVAR_ARCHI
 local transfer_marks = CreateConVar("cl_rdrm_deadeye_transfer_to_ragdolls", "0", {FCVAR_ARCHIVE}, "Transfer the marks of an entity that just died to their ragdoll. Requires keep corpses enabled. Also might be a bit wonky at times...", 0, 1)
 local debug_mode = CreateConVar("cl_rdrm_deadeye_debug", "0", {FCVAR_ARCHIVE}, "Debug!!!", 0, 1)
 local max_deadeye_timer = CreateConVar("cl_rdrm_deadeye_timer", "10", {FCVAR_ARCHIVE}, "Timer, for you know what.", 0, 10000)
+local refill_mult = CreateConVar("cl_rdrm_deadeye_refill_multiplier", "1", {FCVAR_ARCHIVE}, "Multiply dat shiet", 0, 10)
 local deadeye_timer = max_deadeye_timer:GetFloat()
 
 local deadeye_marks = {}
@@ -340,12 +341,12 @@ hook.Add("Think", "rdrm_deadeye_think", function()
 	if rdrm.in_deadeye then
 		deadeye_timer = math.Clamp(deadeye_timer - RealFrameTime(), 0, max_deadeye_timer:GetFloat())
 	else
-		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime() / 4, 0, max_deadeye_timer:GetFloat())
+		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime() / 4 * refill_mult:GetFloat(), 0, max_deadeye_timer:GetFloat())
 	end
 
 	if lp:GetActiveWeapon() != NULL and lp:GetActiveWeapon():GetClass() == "weapon_ciga" and lp:KeyDown(IN_ATTACK) then
 		whiffing_the_cig = whiffing_the_cig + RealFrameTime()
-		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime() / 2, 0, max_deadeye_timer:GetFloat())
+		deadeye_timer = math.Clamp(deadeye_timer + RealFrameTime() / 2 * refill_mult:GetFloat(), 0, max_deadeye_timer:GetFloat())
 	else
 		whiffing_the_cig = 0
 	end
