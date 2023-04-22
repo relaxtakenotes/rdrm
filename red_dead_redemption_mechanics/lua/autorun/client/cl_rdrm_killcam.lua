@@ -63,7 +63,7 @@ local function set_random_angle(ent)
 		})
 
 		if iter > 20 then
-			if tr_f.StartSolid or tr_t.StartSolid then offset:Rotate(120) end
+			if tr_f.StartSolid or tr_t.StartSolid then offset:Rotate(-offset:Angle()) end
 			break
 		end
 
