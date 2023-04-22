@@ -37,14 +37,15 @@ end)
 if game.SinglePlayer() then
 	hook.Add("Think", "rdrm_lerp_time_scale", function() 
 		if timescale_lerp == 1 then
-			game.SetTimeScale(1)
 			return 
 		end
+
+		local lerped = Lerp(timescale_lerp, 0.1, 1)
 		
-		game.SetTimeScale(Lerp(timescale_lerp, 0.1, 1))
+		game.SetTimeScale(lerped)
 
 		timescale_lerp = math.Clamp(timescale_lerp + engine.TickInterval() * 5, 0, 1)
-		rdrm.timescale = timescale_lerp
+		rdrm.timescale = lerped
 	end)
 end
 
