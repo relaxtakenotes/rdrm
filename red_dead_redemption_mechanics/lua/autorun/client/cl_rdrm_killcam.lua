@@ -29,6 +29,8 @@ local function is_usable_for_killcam(ent)
 end
 
 local function set_random_angle(ent)
+	if not IsValid(ent) then print("[RDRM] Unable to set a random angle cause the entity is invalid. Notify the dev about it on github. Please give context!") return end
+
 	local pos = ent:GetPos()
 
 	if not ent:IsRagdoll() then pos.z = pos.z + ent:BoundingRadius() * 4/3 end
@@ -93,7 +95,8 @@ local function rdrm_killcam_apply(ent, ragdoll)
 	sent = false
 	switched = false
 	current_ent = ragdoll
-	set_random_angle(ent)
+	set_random_angle(current_ent)
+
 	rdrm.killcam_time = 1
 
 	rdrm.killcam_willswitch = math.Rand(0, 1) > 0.35
@@ -150,8 +153,7 @@ hook.Add("HUDShouldDraw", "rdrm_killcam_hide_hud", function(element)
 	if rdrm.killcam_time > 0 then return false end
 end)
 
-
-hook.Add("rdrm_received_ragdoll_event", "rdrm_killcam_ragdoll_event", function(owner, ragdoll)
+table.insert(rdrm.hooks["ragdoll_event"], function(owner, ragdoll) 
 	rdrm_killcam_apply(owner, ragdoll)
 end)
 

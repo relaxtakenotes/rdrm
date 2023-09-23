@@ -16,13 +16,13 @@ util.AddNetworkString("rdrm_request_change_state") // from client
 util.AddNetworkString("rdrm_player_death") // to client
 util.AddNetworkString("rdrm_player_spawn") // to client
 
-hook.Add("CreateEntityRagdoll", "rdrm_broadcast_ragdolls", function(owner, ent)
+hook.Add("CreateEntityRagdoll", "rdrm_broadcast_ragdolls", function(owner, ragdoll)
 	if not owner.rdrm_was_attacked then return end // we only need this to determine if we killed someone
 
-	timer.Simple(0, function() 
+	timer.Simple(0, function()
 		net.Start("rdrm_ragdoll_spawned")
 			net.WriteEntity(owner)
-			net.WriteEntity(ent)
+			net.WriteEntity(ragdoll)
 		net.Send(owner.rdrm_attacker)
 	end)
 end)

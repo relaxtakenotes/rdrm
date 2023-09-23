@@ -188,16 +188,16 @@ local function update_marks()
 	end
 end
 
-hook.Add("rdrm_received_ragdoll_event", "rdrm_deadeye_ragdoll_event", function(owner, ragdoll)
+table.insert(rdrm.hooks["ragdoll_event"], function(owner, ragdoll) 
 	deadeye_timer = deadeye_timer + 0.3
 	if max_deadeye_timer:GetFloat() <= 0 then return end
 	if not transfer_marks:GetBool() then return end
 	
 	owner.rdrm_stop_render = true
 	ragdoll.rdrm_force_render = true
-
+	
 	if not is_usable_for_deadeye(owner) then return end
-
+	
 	for i, data in ipairs(deadeye_marks) do
 		if data.entindex == owner:EntIndex() then
 			data.entity = ragdoll

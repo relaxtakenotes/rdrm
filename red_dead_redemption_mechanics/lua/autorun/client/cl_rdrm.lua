@@ -3,6 +3,8 @@ print("cl_rdrm.lua loaded")
 rdrm.in_deadeye = false
 rdrm.in_killcam = false
 rdrm.noggin = false // used for some color correction stuff
+rdrm.hooks = {}
+rdrm.hooks["ragdoll_event"] = {}
 
 sound.Add({
 	name = "rdrm_death",
@@ -94,7 +96,10 @@ end)
 net.Receive("rdrm_ragdoll_spawned", function()
 	local owner = net.ReadEntity()
 	local ragdoll = net.ReadEntity()
-	hook.Run("rdrm_received_ragdoll_event", owner, ragdoll)
+
+	for i, func in ipairs(rdrm.hooks["ragdoll_event"]) do
+		func(owner, ragdoll)
+	end
 end)
 
 function rdrm.change_state(data)
