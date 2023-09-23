@@ -18,10 +18,13 @@ util.AddNetworkString("rdrm_player_spawn") // to client
 
 hook.Add("CreateEntityRagdoll", "rdrm_broadcast_ragdolls", function(owner, ent)
 	if not owner.rdrm_was_attacked then return end // we only need this to determine if we killed someone
-	net.Start("rdrm_ragdoll_spawned")
-		net.WriteEntity(owner)
-		net.WriteEntity(ent)
-	net.Send(owner.rdrm_attacker)
+
+	timer.Simple(0, function() 
+		net.Start("rdrm_ragdoll_spawned")
+			net.WriteEntity(owner)
+			net.WriteEntity(ent)
+		net.Send(owner.rdrm_attacker)
+	end)
 end)
 
 hook.Add("PlayerDeath", "rdrm_player_death", function(victim, inflictor, attacker) 
@@ -39,12 +42,12 @@ if game.SinglePlayer() then
 		if timescale_lerp == 1 then
 			return 
 		end
+		
 		timescale_lerp = math.Clamp(timescale_lerp + FrameTime() * 5, 0, 1)
 		local lerped = Lerp(timescale_lerp, 0.1, 1)
 		game.SetTimeScale(lerped)
 
 		rdrm.timescale = lerped
-
 	end)
 end
 

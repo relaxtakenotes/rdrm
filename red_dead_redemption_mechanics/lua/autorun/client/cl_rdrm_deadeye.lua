@@ -133,8 +133,6 @@ local function create_mark()
 	end
 
 	local hitbox_matrix = get_hitbox_matrix(vtr.Entity, vtr.HitBox)
-	//local precision_multiplier = math.Remap(vtr.Fraction, 0, 1, 1, 10)
-	//vtr.HitPos = vtr.HitPos + (hitbox_matrix:GetTranslation() - vtr.HitPos):GetNormalized() * precision_multiplier + vtr.Normal * 2
 
 	local distance = vtr.StartPos:Distance(vtr.HitPos)
 	if distance > 1000 then
@@ -144,13 +142,15 @@ local function create_mark()
 		vtr.HitPos = vtr.HitPos + (hitbox_matrix:GetTranslation() - vtr.HitPos):GetNormalized() * precision + vtr.Normal * 2
 	end
 
+	// took me years to figure out this... sometimes math is crucial.
+	local offset = WorldToLocal(vtr.HitPos, hitbox_matrix:GetAngles(), hitbox_matrix:GetTranslation(), hitbox_matrix:GetAngles())
 
 	local data = {
 		pos = hitbox_matrix:GetTranslation(),
 		hitbox = vtr.HitBox,
 		entity = vtr.Entity,
 		entindex = vtr.Entity:EntIndex(),
-		offset = hitbox_matrix:GetTranslation() - vtr.HitPos,
+		offset = offset,
 		order = table.Count(deadeye_marks) + 1,
 		brightness = 255
 	}
@@ -158,7 +158,6 @@ local function create_mark()
 	if string.find(tr_g.Entity:GetClass(), "npc_grenade_frag") then 
 		data.offset = Vector()
 	end
-	data.offset:Rotate(-tr.Entity:GetAngles())
 
 	table.insert(deadeye_marks, data)
 
@@ -172,24 +171,20 @@ concommand.Add("deadeye_toggle", toggle_deadeye)
 
 local function update_marks()
 	for i, data in ipairs(deadeye_marks) do
-		//mark.pos =get_hitbox_matrix(ent, data.hitbox_id)
 		if not IsValid(data.entity) then
 			table.remove(deadeye_marks, i) 
 			continue
 		end
 		local hitbox_matrix = get_hitbox_matrix(data.entity, data.hitbox)
-		local offset = Vector(data.offset:Unpack())
 
-		if not hitbox_matrix then // invalid cuz not rendered
-			local pos, _ = get_hitbox_info(data.entity, data.hitbox)
-			offset:Rotate(-data.entity:GetAngles())
-			data.pos = pos - offset
+		if not hitbox_matrix then
+			local pos, ang = get_hitbox_info(data.entity, data.hitbox)
+			data.pos = pos
 			continue
 		end
-
-		local pos = hitbox_matrix:GetTranslation()
-		offset:Rotate(data.entity:GetAngles())
-		data.pos = pos - offset
+	
+		local pos = LocalToWorld(data.offset, Angle(), hitbox_matrix:GetTranslation(), hitbox_matrix:GetAngles())
+		data.pos = pos
 	end
 end
 
@@ -257,7 +252,7 @@ hook.Add("CreateMove", "rdrm_deadeye_aim", function(cmd)
 	local lp = LocalPlayer()
 
 	if rdrm.in_deadeye then
-		if SetViewPunchAngles then
+		if isfunction(SetViewPunchAngles) then
 			SetViewPunchAngles(Angle(0,0,0))
 		end
 
@@ -366,7 +361,7 @@ hook.Add("Think", "rdrm_deadeye_think", function()
 		
 		aim_lerp = math.Clamp(aim_lerp + RealFrameTime() * 3 + 0.01, 0, 1)
 		
-		local lerped_angles = LerpAngle(math.ease.InOutCubic(aim_lerp), start_angle, aimangles)
+		local lerped_angles = LerpAngle(math.ease.InOutQuad(aim_lerp), start_angle, aimangles)
 
 		lp:SetEyeAngles(lerped_angles)
 		
