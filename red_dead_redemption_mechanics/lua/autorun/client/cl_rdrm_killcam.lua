@@ -28,8 +28,8 @@ local function is_usable_for_killcam(ent)
 	return true
 end
 
-local function set_random_angle(ent)
-	if not IsValid(ent) then print("[RDRM] Unable to set a random angle cause the entity is invalid. Notify the dev about it on github. Please give context!") return end
+local function set_random_angle(ent, is_flashcut)
+	if not IsValid(ent) then print("[RDRM] Unable to set a random angle cause the entity is invalid. Notify the dev about it on github. Please give context!") return false end
 
 	local pos = ent:GetPos()
 
@@ -43,9 +43,11 @@ local function set_random_angle(ent)
 		iter = iter + 1
 
 		offset = ent:GetAngles():Forward()
-		local rand = AngleRand()
-		rand.z = 0
-		offset:Rotate(rand)
+		if not is_flashcut then
+			local rand = AngleRand()
+			rand.z = 0
+			offset:Rotate(rand)
+		end
 		if not ent:IsRagdoll() then offset.z = offset.z * 0.5 end
 
 		offset = offset * 100 * mult
@@ -85,6 +87,8 @@ local function set_random_angle(ent)
 
 	desired_pos = pos + offset
 	desired_angle = (pos - desired_pos):Angle()
+
+	return true
 end
 
 local function rdrm_killcam_apply(ent, ragdoll)
@@ -97,8 +101,16 @@ local function rdrm_killcam_apply(ent, ragdoll)
 	sent = false
 	switched = false
 	current_ent = ragdoll
-	set_random_angle(current_ent)
 
+	local weapon = LocalPlayer():GetActiveWeapon()
+	local is_flashcut = IsValid(weapon) and weapon:GetClass() == "weapon_flashcut2" and LocalPlayer():GetVelocity():Length() <= 0
+
+	if is_flashcut then
+		if not set_random_angle(ent, is_flashcut) then return end
+	else
+		if not set_random_angle(current_ent, is_flashcut) then return end
+	end
+	
 	rdrm.killcam_time = 1
 
 	rdrm.killcam_willswitch = math.Rand(0, 1) > 0.35
@@ -106,10 +118,10 @@ local function rdrm_killcam_apply(ent, ragdoll)
 
 	if rdrm.killcam_willswitch then
 		rdrm.create_event(events, 2.5 * length_mult:GetFloat(), function()
-			if rdrm.switch_to_local then
-				set_random_angle(LocalPlayer())
+			if rdrm.switch_to_local or is_flashcut then
+				set_random_angle(LocalPlayer(), is_flashcut)
 			else
-				set_random_angle(current_ent)
+				set_random_angle(current_ent, is_flashcut)
 			end
 		end)
 
