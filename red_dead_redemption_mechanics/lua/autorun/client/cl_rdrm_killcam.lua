@@ -43,7 +43,9 @@ local function set_random_angle(ent)
 		iter = iter + 1
 
 		offset = ent:GetAngles():Forward()
-		offset:Rotate(Angle(math.Rand(-1.5, 1.5), math.Rand(-1.5, 1.5), 0) * 45)
+		local rand = AngleRand()
+		rand.z = 0
+		offset:Rotate(rand)
 		if not ent:IsRagdoll() then offset.z = offset.z * 0.5 end
 
 		offset = offset * 100 * mult

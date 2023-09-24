@@ -15,7 +15,7 @@ local function add_accuracy_var(cvar_string)
 	accuracy_vars[cvar_string] = GetConVar(cvar_string)
 end
 
-for _, convar in ipairs({"arccw_mult_movedisp", "arccw_mult_hipfire", "mgbase_sv_accuracy", "mgbase_sv_recoil", "sv_tfa_spread_multiplier", "sv_tfa_soundscale"}) do
+for _, convar in ipairs({"arccw_mult_movedisp", "arccw_mult_hipfire", "mgbase_sv_accuracy", "mgbase_sv_recoil", "sv_tfa_spread_multiplier"}) do
     add_accuracy_var(convar)
 end
 
